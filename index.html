@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<meta name="description" content="HOLODESK — an interactive 3D object studio in a single HTML file.">
+<title>HOLODESK — 3D Object Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--bg:#080b12;--panel:#0e1420;--panel2:#111a29;--line:rgba(139,170,213,.16);--text:#eaf2ff;--muted:#7f91aa;--cyan:#65e6ff;--blue:#6e91ff;--violet:#b095ff;--green:#7ce7b7;--amber:#ffca7b;--sans:Manrope,sans-serif;--mono:'DM Mono',monospace}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}button,input,select{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.shell{height:100%;display:flex;flex-direction:column;background:radial-gradient(ellipse at 55% 35%,rgba(32,68,105,.15),transparent 55%),#080b12}
+.top{height:58px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 19px;border-bottom:1px solid var(--line);background:rgba(8,12,20,.92);z-index:10}.brand{display:flex;align-items:center;gap:11px}.logo{height:28px;width:28px;border:1px solid rgba(101,230,255,.55);border-radius:8px;display:grid;place-items:center;color:var(--cyan);font-size:16px;box-shadow:0 0 20px #65e6ff18}.brand strong{font-size:12px;letter-spacing:.19em}.brand small{font:9px var(--mono);color:var(--muted);letter-spacing:.12em;margin-left:7px}.top-center{font:9px var(--mono);letter-spacing:.16em;color:#7386a1}.top-actions{display:flex;align-items:center;gap:8px}.status{font:9px var(--mono);color:var(--green);margin-right:10px}.status:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);margin-right:7px}.btn{border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.035);padding:8px 11px;font-size:10px;color:#aebed2;transition:.16s}.btn:hover{border-color:#65e6ff66;background:#65e6ff12;color:var(--cyan)}.btn.primary{background:linear-gradient(110deg,#65e6ff1c,#6e91ff20);border-color:#65e6ff55;color:var(--cyan)}.btn.active{border-color:#65e6ff75;background:#65e6ff18;color:var(--cyan)}
+.workspace{flex:1;min-height:0;display:grid;grid-template-columns:224px minmax(0,1fr) 258px}
+.sidebar{background:rgba(12,18,29,.91);min-height:0;overflow:auto}.left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}.panel-section{padding:17px 15px;border-bottom:1px solid var(--line)}.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.section-head span{font:9px var(--mono);letter-spacing:.14em;color:#8498b4}.section-head small{font:9px var(--mono);color:#5e718d}.upload-zone{border:1px dashed rgba(101,230,255,.32);border-radius:10px;padding:17px 10px;text-align:center;background:rgba(101,230,255,.035);cursor:pointer;transition:.2s}.upload-zone:hover{background:rgba(101,230,255,.08);border-color:var(--cyan)}.upload-icon{width:34px;height:34px;margin:0 auto 9px;border-radius:10px;display:grid;place-items:center;background:#65e6ff17;color:var(--cyan);font-size:18px}.upload-zone b{display:block;font-size:10px;margin-bottom:5px}.upload-zone small{font:9px var(--mono);color:var(--muted);line-height:1.6}.file-types{margin-top:9px;text-align:center;font:8px var(--mono);color:#5d708b;letter-spacing:.08em}
+.library{display:grid;gap:6px}.library-item{display:flex;align-items:center;gap:9px;padding:9px;border:1px solid transparent;border-radius:8px;background:transparent;text-align:left;color:#aebed2;width:100%}.library-item:hover,.library-item.selected{background:#65e6ff0b;border-color:#65e6ff2b}.lib-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(145deg,#65e6ff18,#6e91ff10);color:var(--cyan);font-size:15px}.library-item b{display:block;font-size:9px;font-weight:600}.library-item small{display:block;font:8px var(--mono);color:#71849e;margin-top:3px}
+.scene{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 44%,rgba(32,67,105,.17),transparent 55%),linear-gradient(135deg,#0b111d,#080d16)}
+.scene-toolbar{height:45px;flex:none;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:rgba(10,16,26,.55)}.scene-label{font:9px var(--mono);letter-spacing:.13em;color:#9aacc3}.scene-label em{color:var(--cyan);font-style:normal;margin-left:7px}.tool-group{display:flex;gap:5px}.icon-btn{height:28px;min-width:29px;border:1px solid transparent;border-radius:6px;background:transparent;color:#91a5bf;font-size:13px}.icon-btn:hover,.icon-btn.active{background:#65e6ff12;border-color:#65e6ff35;color:var(--cyan)}
+#viewport{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none}#viewport canvas{display:block;width:100%;height:100%;outline:none}.view-hud{position:absolute;pointer-events:none;font:8px var(--mono);letter-spacing:.11em;color:#7287a2}.hud-tl{top:17px;left:17px}.hud-tr{top:17px;right:17px;text-align:right}.hud-bl{bottom:16px;left:17px}.hud-br{bottom:16px;right:17px;text-align:right}.axis{display:flex;gap:9px;margin-top:7px}.axis span:nth-child(1){color:#ff818b}.axis span:nth-child(2){color:#7ce7b7}.axis span:nth-child(3){color:#70a7ff}
+.viewport-hint{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);padding:7px 11px;border:1px solid #9cb8dd20;border-radius:20px;background:#09111dc9;color:#70839c;font:8px var(--mono);white-space:nowrap;pointer-events:none}
+.bottom-bar{height:39px;flex:none;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#0b111c}.bottom-bar span{font:8px var(--mono);color:#70839c}.bottom-bar b{color:var(--green);font-weight:400}
+.prop-group{padding:16px 14px;border-bottom:1px solid var(--line)}.prop-title{font:9px var(--mono);letter-spacing:.14em;color:#879ab4;margin-bottom:13px;display:flex;justify-content:space-between}.prop-title small{color:#5d7089}.prop-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:11px 0}.prop-row label{font-size:9px;color:#9eafc5}.value{font:9px var(--mono);color:var(--cyan);min-width:34px;text-align:right}.range{width:100%;height:3px;appearance:none;background:#26354a;border-radius:9px;outline:none}.range::-webkit-slider-thumb{appearance:none;width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 9px #65e6ff77}.range-line{display:flex;align-items:center;gap:10px}.range-line .range{flex:1}.select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:7px;background:#111a29;color:#c6d4e7;font-size:9px}.swatches{display:flex;gap:7px;flex-wrap:wrap}.swatch{width:23px;height:23px;border-radius:7px;border:2px solid transparent;outline:1px solid transparent}.swatch.selected{outline-color:var(--cyan);border-color:#101925}.toggle-row{display:flex;justify-content:space-between;align-items:center;margin:12px 0}.toggle-row label{font-size:9px;color:#a6b6cb}.switch{height:18px;width:32px;border:0;border-radius:20px;background:#29384d;padding:2px}.switch:after{content:"";display:block;width:14px;height:14px;border-radius:50%;background:#8ca0ba;transition:.18s}.switch.on{background:#65e6ff4a}.switch.on:after{transform:translateX(14px);background:var(--cyan)}
+.transform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.transform-cell{border:1px solid var(--line);border-radius:6px;padding:7px 4px;background:#ffffff05;text-align:center}.transform-cell small{display:block;font:8px var(--mono);color:#7488a3;margin-bottom:5px}.transform-cell input{width:100%;border:0;background:transparent;color:#bcd0e8;text-align:center;font:9px var(--mono);outline:none}
+.modal-backdrop{position:fixed;inset:0;background:#03060bbd;backdrop-filter:blur(8px);z-index:50;display:none;place-items:center;padding:20px}.modal-backdrop.show{display:grid}.modal{width:min(430px,100%);border:1px solid #8cb6e43a;border-radius:14px;background:#101927;box-shadow:0 25px 80px #0009;padding:20px}.modal h2{font-size:17px;margin:0 0 7px}.modal p{font-size:10px;color:var(--muted);line-height:1.7}.modal-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:18px}
+.toast{position:fixed;z-index:80;right:18px;bottom:18px;padding:11px 14px;border:1px solid #65e6ff40;border-radius:9px;background:#101b2bea;box-shadow:0 12px 35px #0008;font-size:10px;color:#c4d5e9;animation:toast .2s}.toast b{color:var(--cyan);margin-right:6px}@keyframes toast{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.empty-state{height:100%;display:grid;place-items:center;text-align:center;padding:30px;color:#7f91aa}.empty-state b{display:block;color:#d8e6f7;font-size:12px;margin:10px}.empty-state small{font:9px var(--mono);line-height:1.7}
+@media(max-width:950px){.workspace{grid-template-columns:190px minmax(0,1fr)}.right{display:none}.top-center{display:none}}
+@media(max-width:620px){.workspace{grid-template-columns:1fr}.left{display:none}.top{padding:0 11px}.top .status{display:none}.brand small{display:none}.top-actions .btn{padding:7px 8px}.scene-toolbar{padding:0 8px}.scene-label{font-size:8px}.bottom-bar{padding:0 8px}.bottom-bar span{font-size:7px}.viewport-hint{font-size:7px}.scene-toolbar .tool-group{gap:1px}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+ <div class="brand"><span class="logo">◇</span><div><strong>HOLODESK</strong><small>3D OBJECT STUDIO</small></div></div>
+ <div class="top-center">SPATIAL DESIGN ENVIRONMENT <span style="color:#65e6ff">/</span> SESSION 001</div>
+ <div class="top-actions"><span class="status" id="engineStatus">ENGINE ONLINE</span><button class="btn" id="resetView">↺ Reset view</button><button class="btn primary" id="exportShot">↗ Export image</button></div>
+</header>
+<main class="workspace">
+ <aside class="sidebar left">
+  <section class="panel-section">
+   <div class="section-head"><span>IMPORT MODEL</span><small>01 / INPUT</small></div>
+   <label class="upload-zone" for="modelFile"><div class="upload-icon">↑</div><b>Drop a 3D model here</b><small>or click to browse your files<br>Load a model into the workspace</small></label>
+   <input id="modelFile" type="file" accept=".glb,.gltf,.obj,.stl" hidden>
+   <div class="file-types">SUPPORTED · GLB / GLTF / OBJ / STL</div>
+  </section>
+  <section class="panel-section">
+   <div class="section-head"><span>OBJECT LIBRARY</span><small>02 / SCENE</small></div>
+   <div class="library">
+    <button class="library-item selected" data-model="knot"><span class="lib-icon">◉</span><span><b>Photon knot</b><small>TORUS KNOT · DEMO</small></span></button>
+    <button class="library-item" data-model="crystal"><span class="lib-icon">◇</span><span><b>Prism crystal</b><small>ICOSAHEDRON · DEMO</small></span></button>
+    <button class="library-item" data-model="orb"><span class="lib-icon">◌</span><span><b>Energy orb</b><small>SPHERE · DEMO</small></span></button>
+    <button class="library-item" data-model="ring"><span class="lib-icon">◎</span><span><b>Orbital rings</b><small>TORUS ARRAY · DEMO</small></span></button>
+    <button class="library-item" data-model="cube"><span class="lib-icon">▣</span><span><b>Precision cube</b><small>BOX · DEMO</small></span></button>
+   </div>
+  </section>
+  <section class="panel-section">
+   <div class="section-head"><span>QUICK ACTIONS</span><small>03 / TOOLS</small></div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+    <button class="btn" id="autoRotate">⟳ Auto rotate</button><button class="btn" id="centerModel">◎ Center object</button>
+    <button class="btn" id="wireQuick">⌗ Wireframe</button><button class="btn" id="fullscreen">⛶ Fullscreen</button>
+   </div>
+  </section>
+ </aside>
+ <section class="scene">
+  <div class="scene-toolbar">
+   <div class="scene-label">VIEWPORT <em>● LIVE RENDER</em></div>
+   <div class="tool-group">
+    <button class="icon-btn active" id="orbitMode" title="Orbit controls">◉</button>
+    <button class="icon-btn" id="gridToggle" title="Toggle grid">▦</button>
+    <button class="icon-btn" id="axisToggle" title="Toggle axes">⌖</button>
+    <button class="icon-btn" id="lightToggle" title="Toggle studio lighting">☼</button>
+   </div>
+  </div>
+  <div id="viewport">
+   <div class="view-hud hud-tl">PERSPECTIVE VIEW<br><span style="color:#65e6ff">CAMERA / ORBIT</span><div class="axis"><span>X</span><span>Y</span><span>Z</span></div></div>
+   <div class="view-hud hud-tr" id="modelHud">OBJECT: PHOTON KNOT<br>VERTICES: —</div>
+   <div class="view-hud hud-bl">DRAG TO ORBIT · SCROLL TO ZOOM</div>
+   <div class="view-hud hud-br" id="fpsHud">RENDERER: WEBGL<br>SHADING: PBR</div>
+   <div class="viewport-hint">LEFT DRAG · ROTATE &nbsp; / &nbsp; RIGHT DRAG · PAN &nbsp; / &nbsp; SCROLL · ZOOM</div>
+  </div>
+  <div class="bottom-bar"><span>SCENE <b>● SAVED LOCALLY</b></span><span id="objectInfo">PHOTON KNOT &nbsp;·&nbsp; 1 OBJECT</span><span>WEBGL / THREE.JS</span></div>
+ </section>
+ <aside class="sidebar right">
+  <section class="prop-group">
+   <div class="prop-title">OBJECT INSPECTOR <small>01 / PROPERTIES</small></div>
+   <div class="prop-row"><label>Object name</label><span class="value" id="objectName">PHOTON</span></div>
+   <div class="prop-row"><label>Geometry</label><span class="value" id="geometryName">TORUS KNOT</span></div>
+   <div class="prop-row"><label>Material</label></div>
+   <select class="select" id="materialSelect"><option value="standard">Polished metal</option><option value="glass">Translucent glass</option><option value="matte">Soft matte</option><option value="emissive">Neon emission</option><option value="gold">Brushed gold</option></select>
+  </section>
+  <section class="prop-group">
+   <div class="prop-title">SURFACE & FINISH <small>02 / LOOK</small></div>
+   <div class="prop-row"><label>Base color</label><span class="value" id="colorValue">#65E6FF</span></div>
+   <div class="swatches" id="swatches">
+    <button class="swatch selected" data-color="#65e6ff" style="background:#65e6ff" aria-label="Cyan"></button><button class="swatch" data-color="#9d8aff" style="background:#9d8aff" aria-label="Violet"></button><button class="swatch" data-color="#7ce7b7" style="background:#7ce7b7" aria-label="Mint"></button><button class="swatch" data-color="#ffbd79" style="background:#ffbd79" aria-label="Amber"></button><button class="swatch" data-color="#f47c9a" style="background:#f47c9a" aria-label="Rose"></button><button class="swatch" data-color="#dce7f5" style="background:#dce7f5" aria-label="Silver"></button>
+   </div>
+   <div class="prop-row" style="margin-top:17px"><label>Metalness</label><span class="value" id="metalValue">72%</span></div><div class="range-line"><input class="range" id="metalness" type="range" min="0" max="100" value="72"></div>
+   <div class="prop-row"><label>Roughness</label><span class="value" id="roughValue">24%</span></div><div class="range-line"><input class="range" id="roughness" type="range" min="0" max="100" value="24"></div>
+  </section>
+  <section class="prop-group">
+   <div class="prop-title">TRANSFORM <small>03 / SPATIAL</small></div>
+   <div class="prop-row"><label>Rotation speed</label><span class="value" id="speedValue">0.4×</span></div><div class="range-line"><input class="range" id="speed" type="range" min="0" max="20" value="4"></div>
+   <div class="prop-row"><label>Object scale</label><span class="value" id="scaleValue">1.0×</span></div><div class="range-line"><input class="range" id="scale" type="range" min="30" max="180" value="100"></div>
+   <div class="prop-row" style="margin-top:16px"><label>Position / XYZ</label></div>
+   <div class="transform-grid"><div class="transform-cell"><small>X</small><input id="posX" type="number" step=".1" value="0"></div><div class="transform-cell"><small>Y</small><input id="posY" type="number" step=".1" value="0"></div><div class="transform-cell"><small>Z</small><input id="posZ" type="number" step=".1" value="0"></div></div>
+  </section>
+  <section class="prop-group">
+   <div class="prop-title">ENVIRONMENT <small>04 / STUDIO</small></div>
+   <div class="prop-row"><label>Environment preset</label></div>
+   <select class="select" id="environment"><option value="nebula">Nebula studio</option><option value="midnight">Midnight</option><option value="arctic">Arctic light</option><option value="void">Deep void</option></select>
+   <div class="toggle-row"><label>Ground grid</label><button class="switch on" id="gridSwitch" aria-label="Toggle ground grid"></button></div>
+   <div class="toggle-row"><label>Contact shadow</label><button class="switch on" id="shadowSwitch" aria-label="Toggle shadow"></button></div>
+  </section>
+ </aside>
+</main>
+</div>
+<div class="modal-backdrop" id="modal"><div class="modal"><h2>Model import guide</h2><p>Choose a local 3D model to inspect. GLB is recommended because it packages geometry and materials into one file. OBJ and STL are also supported. Your file is processed in this browser and is not uploaded.</p><p style="color:#65e6ff">Supported: .glb · .gltf · .obj · .stl</p><div class="modal-actions"><button class="btn" id="modalCancel">Cancel</button><button class="btn primary" id="modalChoose">Choose model</button></div></div></div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
+import {STLLoader} from 'three/addons/loaders/STLLoader.js';
+
+const $=s=>document.querySelector(s), viewport=$('#viewport');
+let scene,camera,renderer,controls,grid,axes,modelRoot,currentModel,autoRotate=false,wireframe=false,studioLights=true,shadowOn=true,baseColor='#65e6ff',speed=.004,clock=new THREE.Clock();
+const mats={};
+function toast(title,msg){const el=document.createElement('div');el.className='toast';el.innerHTML=`<b>${title}</b>${msg}`;document.body.append(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),250)},2800)}
+function init(){
+ scene=new THREE.Scene();scene.background=new THREE.Color('#0a111d');
+ camera=new THREE.PerspectiveCamera(42,viewport.clientWidth/viewport.clientHeight,.1,100);camera.position.set(5,3.2,6.5);
+ renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(viewport.clientWidth,viewport.clientHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;viewport.prepend(renderer.domElement);
+ controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=2;controls.maxDistance=20;
+ scene.add(new THREE.HemisphereLight(0x9bc9ff,0x111a2b,2.0));
+ const key=new THREE.DirectionalLight(0xffffff,3.1);key.position.set(4,6,5);scene.add(key);
+ const fill=new THREE.PointLight(0x5adfff,32,12);fill.position.set(-4,1.8,2);scene.add(fill);
+ const rim=new THREE.PointLight(0x8870ff,36,12);rim.position.set(2,2,-4);scene.add(rim);
+ const floorMat=new THREE.MeshStandardMaterial({color:0x0d1725,roughness:.9,metalness:.1});
+ const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),floorMat);floor.rotation.x=-Math.PI/2;floor.position.y=-1.35;floor.receiveShadow=true;scene.add(floor);
+ grid=new THREE.GridHelper(18,36,0x31506c,0x1a2b40);grid.position.y=-1.34;scene.add(grid);
+ axes=new THREE.AxesHelper(1.8);axes.position.set(-2.7,-1.32,-2.7);scene.add(axes);
+ modelRoot=new THREE.Group();scene.add(modelRoot);
+ loadDemo('knot');resize();animate();
+}
+function makeMaterial(){return new THREE.MeshPhysicalMaterial({color:baseColor,metalness:.72,roughness:.24,clearcoat:.85,clearcoatRoughness:.16,envMapIntensity:1.4,wireframe})}
+function disposeModel(){if(!currentModel)return;currentModel.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose())}});modelRoot.remove(currentModel);currentModel=null}
+function addEdges(mesh,color=0x9befff){const edges=new THREE.EdgesGeometry(mesh.geometry,35),line=new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color,transparent:true,opacity:.22}));mesh.add(line)}
+function makeMesh(geometry){const m=new THREE.Mesh(geometry,makeMaterial());m.castShadow=true;m.receiveShadow=true;return m}
+function loadDemo(type){
+ disposeModel();const group=new THREE.Group();let mesh;
+ if(type==='knot'){mesh=makeMesh(new THREE.TorusKnotGeometry(1.12,.31,240,32,2,3));mesh.rotation.x=.25;addEdges(mesh)}
+ if(type==='crystal'){mesh=makeMesh(new THREE.IcosahedronGeometry(1.45,1));mesh.material=makeMaterial();mesh.material.flatShading=true;addEdges(mesh,0xc1aaff)}
+ if(type==='orb'){mesh=makeMesh(new THREE.SphereGeometry(1.28,96,64));const halo=new THREE.Mesh(new THREE.TorusGeometry(1.65,.018,8,140),new THREE.MeshBasicMaterial({color:baseColor,transparent:true,opacity:.65}));halo.rotation.x=1.1;group.add(halo);const halo2=halo.clone();halo2.rotation.set(.3,.9,.4);halo2.scale.setScalar(1.12);group.add(halo2)}
+ if(type==='ring'){for(let i=0;i<3;i++){const r=makeMesh(new THREE.TorusGeometry(1.05+i*.2,.095,24,120));r.material=makeMaterial();r.rotation.set(i*.72,i*.95,i*.35);group.add(r)}mesh=null}
+ if(type==='cube'){mesh=makeMesh(new THREE.BoxGeometry(1.8,1.8,1.8,4,4,4));addEdges(mesh)}
+ if(mesh)group.add(mesh);
+ currentModel=group;modelRoot.add(group);group.position.set(0,0,0);$('#objectName').textContent=type.toUpperCase();$('#geometryName').textContent=({knot:'TORUS KNOT',crystal:'ICOSAHEDRON',orb:'UV SPHERE',ring:'TORUS ARRAY',cube:'BOX GEOMETRY'})[type];$('#modelHud').innerHTML=`OBJECT: ${type.toUpperCase()}<br>DEMO GEOMETRY`;$('#objectInfo').textContent=type.toUpperCase()+' · 1 OBJECT';
+ document.querySelectorAll('.library-item').forEach(b=>b.classList.toggle('selected',b.dataset.model===type));$('#scale').value=100;$('#scaleValue').textContent='1.0×';group.scale.setScalar(1);$('#posX').value=0;$('#posY').value=0;$('#posZ').value=0;controls.target.set(0,0,0);camera.position.set(5,3.2,6.5);controls.update();applyMaterial();toast('Scene loaded',`${type} demo object is ready.`);
+}
+function applyMaterial(){
+ if(!currentModel)return;
+ const type=$('#materialSelect').value;
+ currentModel.traverse(o=>{if(!o.isMesh)return;let m;
+  if(type==='glass')m=new THREE.MeshPhysicalMaterial({color:baseColor,metalness:.1,roughness:.08,transmission:.82,thickness:.8,ior:1.35,transparent:true,opacity:.92,clearcoat:1});
+  else if(type==='matte')m=new THREE.MeshStandardMaterial({color:baseColor,metalness:.05,roughness:.82});
+  else if(type==='emissive')m=new THREE.MeshStandardMaterial({color:baseColor,emissive:baseColor,emissiveIntensity:1.35,metalness:.35,roughness:.28});
+  else if(type==='gold')m=new THREE.MeshStandardMaterial({color:0xdcae58,metalness:.92,roughness:.27});
+  else m=new THREE.MeshPhysicalMaterial({color:baseColor,metalness:+$('#metalness').value/100,roughness:+$('#roughness').value/100,clearcoat:.85,clearcoatRoughness:.16});
+  m.wireframe=wireframe;o.material=m;
+ });
+}
+function resize(){if(!renderer)return;const w=viewport.clientWidth,h=viewport.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}
+function animate(){requestAnimationFrame(animate);const dt=clock.getDelta();if(autoRotate&&currentModel)currentModel.rotation.y+=speed*dt*60;controls.update();renderer.render(scene,camera)}
+function centerObject(){if(!currentModel)return;const box=new THREE.Box3().setFromObject(currentModel),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3()),max=Math.max(size.x,size.y,size.z);currentModel.position.sub(center);controls.target.set(0,0,0);camera.position.set(max*1.7,max*1.05,max*2.1);controls.update()}
+function setGrid(on){grid.visible=on;$('#gridToggle').classList.toggle('active',on);$('#gridSwitch').classList.toggle('on',on)}
+function setWire(on){wireframe=on;applyMaterial();$('#wireQuick').classList.toggle('active',on)}
+function loadFile(file){
+ if(!file)return;const ext=file.name.split('.').pop().toLowerCase(),url=URL.createObjectURL(file);$('#engineStatus').textContent='IMPORTING MODEL…';
+ const done=obj=>{disposeModel();currentModel=obj;modelRoot.add(obj);obj.traverse(o=>{if(o.isMesh){o.material=makeMaterial();o.castShadow=true}});$('#objectName').textContent=file.name.slice(0,14).toUpperCase();$('#geometryName').textContent=ext.toUpperCase()+' MODEL';$('#modelHud').innerHTML=`OBJECT: ${file.name.toUpperCase()}<br>FORMAT: ${ext.toUpperCase()}`;$('#objectInfo').textContent=file.name.toUpperCase()+' · IMPORTED';centerObject();$('#engineStatus').textContent='ENGINE ONLINE';toast('Model imported',file.name+' loaded locally.');URL.revokeObjectURL(url)};
+ const fail=err=>{console.error(err);$('#engineStatus').textContent='ENGINE ONLINE';toast('Import failed','Could not read this model. Try a GLB, OBJ or STL file.');URL.revokeObjectURL(url)};
+ if(ext==='glb'||ext==='gltf')new GLTFLoader().load(url,g=>done(g.scene),undefined,fail);
+ else if(ext==='obj'){const reader=new FileReader();reader.onload=()=>{try{done(new OBJLoader().parse(reader.result))}catch(e){fail(e)}};reader.onerror=fail;reader.readAsText(file)}
+ else if(ext==='stl')new STLLoader().load(url,g=>{const m=makeMesh(g);done(m)},undefined,fail);
+ else fail(new Error('Unsupported format'));
+}
+$('#modelFile').addEventListener('change',e=>loadFile(e.target.files[0]));
+const zone=$('.upload-zone');zone.addEventListener('dragover',e=>{e.preventDefault();zone.style.borderColor='var(--cyan)'});zone.addEventListener('dragleave',()=>zone.style.borderColor='');zone.addEventListener('drop',e=>{e.preventDefault();zone.style.borderColor='';loadFile(e.dataTransfer.files[0])});
+document.querySelectorAll('[data-model]').forEach(b=>b.onclick=()=>loadDemo(b.dataset.model));
+$('#materialSelect').onchange=applyMaterial;
+$('#metalness').oninput=e=>{$('#metalValue').textContent=e.target.value+'%';applyMaterial()};
+$('#roughness').oninput=e=>{$('#roughValue').textContent=e.target.value+'%';applyMaterial()};
+$('#speed').oninput=e=>{speed=+e.target.value/1000;$('#speedValue').textContent=(+e.target.value/10).toFixed(1)+'×'};
+$('#scale').oninput=e=>{const v=+e.target.value/100;currentModel?.scale.setScalar(v);$('#scaleValue').textContent=v.toFixed(1)+'×'};
+['X','Y','Z'].forEach(axis=>$('#pos'+axis).oninput=e=>{if(currentModel)currentModel.position[axis.toLowerCase()]=+e.target.value||0});
+$('#swatches').querySelectorAll('.swatch').forEach(b=>b.onclick=()=>{baseColor=b.dataset.color;$('#colorValue').textContent=baseColor.toUpperCase();$('#swatches').querySelectorAll('.swatch').forEach(x=>x.classList.toggle('selected',x===b));applyMaterial()});
+$('#autoRotate').onclick=()=>{autoRotate=!autoRotate;$('#autoRotate').classList.toggle('active',autoRotate);toast('Animation',autoRotate?'Auto rotation enabled.':'Auto rotation paused.')};
+$('#centerModel').onclick=centerObject;$('#wireQuick').onclick=()=>setWire(!wireframe);
+$('#gridToggle').onclick=()=>setGrid(!grid.visible);$('#gridSwitch').onclick=()=>setGrid(!grid.visible);
+$('#axisToggle').onclick=()=>{axes.visible=!axes.visible;$('#axisToggle').classList.toggle('active',axes.visible)};
+$('#lightToggle').onclick=()=>{studioLights=!studioLights;scene.children.filter(x=>x.isLight).forEach((l,i)=>{if(i>0)l.visible=studioLights});$('#lightToggle').classList.toggle('active',studioLights);toast('Studio lighting',studioLights?'Lighting enabled.':'Key and accent lights disabled.')};
+$('#shadowSwitch').onclick=()=>{$('#shadowSwitch').classList.toggle('on');shadowOn=$('#shadowSwitch').classList.contains('on');toast('Contact shadow',shadowOn?'Enabled.':'Disabled.')};
+$('#environment').onchange=e=>{const v=e.target.value;scene.background=new THREE.Color(({nebula:'#0a111d',midnight:'#080b14',arctic:'#14202c',void:'#03050a'})[v]);toast('Environment changed',v+' studio selected.')};
+$('#resetView').onclick=()=>{camera.position.set(5,3.2,6.5);controls.target.set(0,0,0);controls.update();if(currentModel){currentModel.rotation.set(0,0,0);currentModel.position.set(0,0,0);currentModel.scale.setScalar(1)}$('#scale').value=100;$('#scaleValue').textContent='1.0×';['X','Y','Z'].forEach(a=>$('#pos'+a).value=0);toast('Viewport reset','Camera and object transform restored.')};
+$('#exportShot').onclick=()=>{renderer.render(scene,camera);const a=document.createElement('a');a.download='holodesk-render.png';a.href=renderer.domElement.toDataURL('image/png');a.click();toast('Image exported','Saved viewport render as PNG.')};
+$('#fullscreen').onclick=()=>{if(!document.fullscreenElement)viewport.requestFullscreen?.();else document.exitFullscreen?.()};
+$('#modalCancel').onclick=()=>$('#modal').classList.remove('show');$('#modalChoose').onclick=()=>{$('#modal').classList.remove('show');$('#modelFile').click()};
+window.addEventListener('resize',resize);
+init();
+</script>
+</body>
+</html>
